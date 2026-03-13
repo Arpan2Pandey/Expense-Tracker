@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expense Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #222222;
+      --accent: #c8f135;
+      --accent-dim: #a8d120;
+      --text: #f0f0f0;
+      --muted: #666666;
+      --red: #ff4d4d;
+      --card-bg: #161616;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    header {
+      max-width: 900px;
+      margin: 0 auto 48px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    header h1 span { color: var(--accent); }
+
+    #total-box {
+      text-align: right;
+    }
+
+    #total-box p {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    #total-amount {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* FORM */
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      position: sticky;
+      top: 40px;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    .form-card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: var(--accent);
+    }
+
+    .field select option { background: var(--surface); }
+
+    button[type="submit"] {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button[type="submit"]:hover { background: var(--accent-dim); }
+    button[type="submit"]:active { transform: scale(0.98); }
+
+    /* ERROR */
+    #form-error {
+      color: var(--red);
+      font-size: 0.75rem;
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* EXPENSE LIST */
+    .list-section {
+      animation: fadeUp 0.6s ease 0.2s both;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .list-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--muted);
+    }
+
+    #expense-count {
+      font-size: 0.7rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    #expense-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .expense-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      transition: border-color 0.2s, transform 0.2s;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .expense-item:hover {
+      border-color: #333;
+      transform: translateX(4px);
+    }
+
+    .expense-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .expense-meta {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .expense-category {
+      display: inline-block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right: 8px;
+    }
+
+    .expense-right {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .expense-amount {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .delete-btn {
+      background: none;
+      border: 1px solid #2a2a2a;
+      color: var(--muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .delete-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    .empty-state p:first-child {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    /* LOADER */
+    #loader {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      display: none;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 680px) {
+      .container { grid-template-columns: 1fr; }
+      .form-card { position: static; }
+      header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      #total-box { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Expense<br/><span>Tracker.</span></h1>
+    <div id="total-box">
+      <p>Total Spent</p>
+      <div id="total-amount">₹0.00</div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ADD EXPENSE FORM -->
+    <div class="form-card">
+      <h2>New Entry</h2>
+      <form id="expense-form">
+
+        <div class="field">
+          <label>Title</label>
+          <input type="text" id="title" placeholder="e.g. Lunch" required />
+        </div>
+
+        <div class="field">
+          <label>Amount (₹)</label>
+          <input type="number" id="amount" placeholder="e.g. 250" step="0.01" required />
+        </div>
+
+        <div class="field">
+          <label>Category</label>
+          <select id="category" required>
+            <option value="">Select...</option>
+            <option value="Food">Food</option>
+            <option value="Travel">Travel</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Health">Health</option>
+            <option value="Education">Education</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Description (optional)</label>
+          <input type="text" id="description" placeholder="Any note..." />
+        </div>
+
+        <button type="submit">+ Add Expense</button>
+        <p id="form-error">Something went wrong. Is your server running?</p>
+      </form>
+    </div>
+
+    <!-- EXPENSE LIST -->
+    <div class="list-section">
+      <div class="list-header">
+        <h2>All Expenses</h2>
+        <span id="expense-count">0 entries</span>
+      </div>
+      <div id="loader">Loading...</div>
+      <div id="expense-list"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ─── CONFIG ───────────────────────────────────────────────
+    // Change this if your FastAPI runs on a different port
+    const API = "http://127.0.0.1:8000";
+
+    // ─── ELEMENTS ─────────────────────────────────────────────
+    const form        = document.getElementById("expense-form");
+    const list        = document.getElementById("expense-list");
+    const totalEl     = document.getElementById("total-amount");
+    const countEl     = document.getElementById("expense-count");
+    const loader      = document.getElementById("loader");
+    const formError   = document.getElementById("form-error");
+
+    // ─── FETCH ALL EXPENSES & TOTAL ───────────────────────────
+    async function loadExpenses() {
+      loader.style.display = "block";
+      list.innerHTML = "";
+
+      try {
+        // Hit GET /expenses → get all rows from DB
+        const res = await fetch(`${API}/expenses`);
+        const expenses = await res.json();
+
+        // Hit GET /expenses/total → get sum
+        const totalRes = await fetch(`${API}/expenses/total`);
+        const totalData = await totalRes.json();
+
+        totalEl.textContent = `₹${(totalData.total_spent || 0).toFixed(2)}`;
+        countEl.textContent = `${expenses.length} entries`;
+
+        if (expenses.length === 0) {
+          list.innerHTML = `
+            <div class="empty-state">
+              <p>📭</p>
+              <p>No expenses yet.<br/>Add your first one!</p>
+            </div>`;
+          return;
+        }
+
+        // Render each expense as a card
+        expenses.forEach((exp, i) => {
+          const item = document.createElement("div");
+          item.className = "expense-item";
+          item.style.animationDelay = `${i * 0.05}s`;
+          item.innerHTML = `
+            <div>
+              <div class="expense-title">${exp.title}</div>
+              <div class="expense-meta">
+                <span class="expense-category">${exp.category}</span>
+                ${exp.description ? exp.description : ""}
+              </div>
+            </div>
+            <div class="expense-right">
+              <div class="expense-amount">₹${exp.amount.toFixed(2)}</div>
+              <button class="delete-btn" onclick="deleteExpense(${exp.id})">delete</button>
+            </div>`;
+          list.appendChild(item);
+        });
+
+      } catch (err) {
+        // If fetch fails — server is probably not running
+        list.innerHTML = `<div class="empty-state"><p>⚠️</p><p>Cannot connect to server.<br/>Make sure FastAPI is running.</p></div>`;
+      } finally {
+        loader.style.display = "none";
+      }
+    }
+
+    // ─── ADD EXPENSE ──────────────────────────────────────────
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault(); // Stop page reload
+      formError.style.display = "none";
+
+      // Build the request body matching ExpenseCreate schema
+      const body = {
+        title:       document.getElementById("title").value,
+        amount:      parseFloat(document.getElementById("amount").value),
+        category:    document.getElementById("category").value,
+        description: document.getElementById("description").value || null,
+      };
+
+      try {
+        // Hit POST /expenses → insert new row in DB
+        const res = await fetch(`${API}/expenses`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify(body),
+        });
+
+        if (!res.ok) throw new Error("Failed");
+
+        form.reset();         // Clear form
+        loadExpenses();       // Refresh list
+
+      } catch (err) {
+        formError.style.display = "block";
+      }
+    });
+
+    // ─── DELETE EXPENSE ───────────────────────────────────────
+    async function deleteExpense(id) {
+      try {
+        // Hit DELETE /expenses/{id} → delete row from DB
+        await fetch(`${API}/expenses/${id}`, { method: "DELETE" });
+        loadExpenses(); // Refresh list
+      } catch (err) {
+        alert("Could not delete. Is your server running?");
+      }
+    }
+
+    // ─── INIT ─────────────────────────────────────────────────
+    loadExpenses(); // Load on page open
+  </script>
+
+</body>
+</html>
